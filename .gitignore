@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 .venv/
 .DS_Store
+docs/assets/src/_built.html

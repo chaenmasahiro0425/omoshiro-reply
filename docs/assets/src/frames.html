@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>omoshiro-reply README images</title>
+<!--
+  README の画像の元。scripts/render_assets.py が各 .frame を PNG に書き出す。
+  X 風の画面はすべてデモ用のイメージ。表示しているリプは実際には投稿していない。
+  いいね数などの数字は付けない（反応があったように見せないため）。
+-->
+<style>
+:root{
+  --bg:#ffffff;
+  --ink:#0f1419;
+  --sub:#536471;
+  --line:#e6ecf0;
+  --soft:#f7f9fa;
+  --blue:#1d9bf0;
+  --navy:#16243d;
+  --marker:#ffe45c;
+  --good:#00a36c;
+  --bad:#e0245e;
+  --amber:#f2a100;
+  --font:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",sans-serif;
+  --mono:"SF Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#d9dee3;font-family:var(--font);color:var(--ink);padding:40px;display:grid;gap:40px;justify-content:start}
+.frame{background:var(--bg);position:relative;overflow:hidden}
+
+/* ---------- 共通: X 風の投稿 ---------- */
+.tl{border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden}
+.post{display:grid;grid-template-columns:52px 1fr;gap:14px;padding:18px 22px;border-bottom:1px solid var(--line);position:relative}
+.post:last-child{border-bottom:0}
+.av{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px}
+.av.me{background:linear-gradient(135deg,#1f3b73,#2f6fe0)}
+.av.ai{background:#8b98a5;font-size:15px}
+.av.fic{background:linear-gradient(135deg,#7a4fd1,#c0569f)}
+.who{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;font-size:16px}
+.who b{font-weight:800}
+.who span{color:var(--sub)}
+.badge-v{display:inline-block;width:16px;height:16px;border-radius:50%;background:var(--blue);vertical-align:-2px}
+.txt{font-size:18px;line-height:1.6;white-space:pre-wrap;margin-top:4px}
+.txt.big{font-size:20px}
+.repto{color:var(--sub);font-size:15px;margin-top:2px}
+.repto em{color:var(--blue);font-style:normal}
+.acts{display:flex;gap:56px;margin-top:12px;color:var(--sub)}
+.acts svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8}
+.thread-line{position:absolute;left:47px;top:76px;bottom:-2px;width:2px;background:var(--line)}
+
+.label{position:absolute;top:16px;right:18px;font-size:13px;font-weight:800;padding:4px 12px;border-radius:999px}
+.label.ai{background:#eef1f4;color:var(--sub)}
+.label.om{background:var(--ink);color:#fff}
+.post.win{background:linear-gradient(90deg,#fffbe0,#fff 60%)}
+.post.win .txt{font-weight:700}
+.post.dim .txt{color:#3d4852}
+
+.demo-note{position:absolute;left:0;right:0;bottom:0;padding:12px 40px;font-size:14px;color:var(--sub);background:var(--soft);border-top:1px solid var(--line)}
+
+/* ---------- デモ画面（1枚ずつ） ---------- */
+.demo{width:1200px;padding:40px 40px 72px}
+.demo h2{margin:0 0 6px;font-size:30px;font-weight:900;letter-spacing:.01em}
+.demo .lead{margin:0 0 22px;color:var(--sub);font-size:17px}
+.demo .lead b{color:var(--ink);background:linear-gradient(transparent 60%,var(--marker) 60%)}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px}
+.vs .col-h{font-size:15px;font-weight:800;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.vs .col-h .dot{width:10px;height:10px;border-radius:50%}
+.why{margin-top:12px;font-size:15px;line-height:1.7;color:#3d4852;background:var(--soft);border-radius:12px;padding:12px 16px}
+.why b{color:var(--ink)}
+
+/* ---------- ヒーロー ---------- */
+#hero{width:1280px;height:600px;padding:48px 64px;display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center;
+  background:radial-gradient(circle at 85% 20%,#e8f3ff 0,#fff 55%)}
+#hero .kicker{font-family:var(--mono);font-size:18px;color:var(--blue);font-weight:700}
+#hero h1{font-size:64px;line-height:1.08;margin:10px 0 18px;font-weight:900;letter-spacing:-.01em}
+#hero .tag{font-size:27px;line-height:1.55;font-weight:800}
+#hero .tag .m{background:linear-gradient(transparent 58%,var(--marker) 58%)}
+#hero .sub{margin-top:20px;font-size:18px;color:var(--sub);line-height:1.7}
+#hero .pills{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+#hero .pill{font-size:15px;font-weight:800;border:2px solid var(--ink);border-radius:999px;padding:5px 14px}
+#hero .stack{display:grid;gap:14px;transform:rotate(-1.5deg)}
+#hero .tl{box-shadow:0 18px 40px rgba(15,20,25,.12)}
+#hero .post{padding:14px 18px;grid-template-columns:44px 1fr}
+#hero .av{width:44px;height:44px;font-size:17px}
+#hero .txt{font-size:16px}
+#hero .x{position:absolute;left:30px;top:22px;width:22px;height:22px}
+
+/* ---------- 仕組み ---------- */
+#how{width:1280px;padding:48px 56px 64px}
+#how h2{font-size:36px;margin:0 0 6px;font-weight:900}
+#how .lead{color:var(--sub);font-size:18px;margin:0 0 28px}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;align-items:stretch}
+.step{border:2px solid var(--line);border-radius:16px;padding:18px 16px;display:grid;gap:10px;align-content:start;position:relative;background:#fff}
+.step .no{font-family:var(--mono);font-size:14px;color:var(--blue);font-weight:800}
+.step h3{margin:0;font-size:21px;font-weight:900}
+.step .n{font-size:34px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1}
+.step .n small{font-size:15px;color:var(--sub);font-weight:700;margin-left:4px}
+.step p{margin:0;font-size:14px;line-height:1.6;color:#3d4852}
+.step .ex{font-size:13.5px;line-height:1.55;background:var(--soft);border-radius:10px;padding:8px 10px;color:#3d4852}
+.step .ex s{color:#9aa5af}
+.step.last{border-color:var(--ink);background:linear-gradient(180deg,#fffbe0,#fff)}
+.step::after{content:"";position:absolute;right:-13px;top:50%;width:12px;height:12px;border-top:3px solid var(--sub);border-right:3px solid var(--sub);transform:translateY(-50%) rotate(45deg);z-index:2}
+.step:last-child::after{display:none}
+.human{margin-top:18px;display:flex;gap:14px;align-items:center;border:2px dashed #c9d2da;border-radius:14px;padding:14px 18px;font-size:16px}
+.human b{font-size:18px}
+.human code{font-family:var(--mono);background:var(--soft);padding:2px 8px;border-radius:6px;font-size:14px}
+
+/* ---------- 定義 ---------- */
+#definition{width:1280px;padding:52px 56px 56px}
+#definition h2{font-size:36px;margin:0 0 4px;font-weight:900}
+#definition .quote{font-size:30px;line-height:1.55;font-weight:900;margin:18px 0 26px}
+#definition .quote .m{background:linear-gradient(transparent 58%,var(--marker) 58%)}
+.formula{display:flex;align-items:center;gap:14px}
+.term{flex:1;border:2px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:6px;text-align:center}
+.term .ic{font-size:30px;line-height:1}
+.term b{font-size:24px}
+.term span{color:var(--sub);font-size:14px}
+.op{font-size:34px;font-weight:900;color:var(--blue)}
+.zero{margin-top:18px;font-size:17px;color:#3d4852}
+.zero b{color:var(--bad)}
+.theory{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
+.theory div{background:var(--soft);border-radius:14px;padding:14px 16px;font-size:14.5px;line-height:1.6;color:#3d4852}
+.theory b{display:block;color:var(--ink);font-size:16px;margin-bottom:2px}
+
+/* ---------- 結果 ---------- */
+#results{width:1280px;padding:48px 56px 60px}
+#results h2{font-size:36px;margin:0 0 4px;font-weight:900}
+#results .lead{color:var(--sub);font-size:17px;margin:0 0 30px}
+.bars{display:grid;gap:20px}
+.bar{display:grid;grid-template-columns:300px 1fr 130px;align-items:center;gap:18px}
+.bar .nm{font-size:21px;font-weight:800}
+.bar .nm small{display:block;font-size:14px;color:var(--sub);font-weight:500}
+.track{height:42px;background:var(--soft);border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.fill{height:100%;border-radius:10px}
+.pct{font-size:34px;font-weight:900;font-variant-numeric:tabular-nums;text-align:right}
+.grid-note{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:30px}
+.grid-note div{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14.5px;line-height:1.6;color:#3d4852}
+.grid-note b{color:var(--ink)}
+
+/* ---------- 採点 ---------- */
+#rate{width:1200px;padding:40px 40px 72px}
+#rate h2{margin:0 0 6px;font-size:30px;font-weight:900}
+#rate .lead{margin:0 0 20px;color:var(--sub);font-size:17px}
+.rrow{display:grid;grid-template-columns:44px 40px 1fr 230px;gap:14px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.rrow:last-child{border-bottom:0}
+.rank{font-size:22px;font-weight:900;color:var(--sub);text-align:center;font-variant-numeric:tabular-nums}
+.rrow .av{width:40px;height:40px;font-size:14px;background:#b7c2cc}
+.rrow .t{font-size:17px;line-height:1.5}
+.meters{display:grid;gap:6px}
+.meter{display:grid;grid-template-columns:80px 1fr 44px;gap:8px;align-items:center;font-size:12.5px;color:var(--sub)}
+.meter .tr{height:9px;border-radius:5px;background:var(--soft);overflow:hidden;border:1px solid var(--line)}
+.meter .f{height:100%}
+.meter .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:800;color:var(--ink)}
+.f.laugh{background:var(--good)}
+.f.ai{background:var(--bad)}
+.rrow.top{background:linear-gradient(90deg,#effbf5,#fff 60%)}
+.rrow.worst{background:linear-gradient(90deg,#fff1f4,#fff 60%)}
+.chip{display:inline-block;font-size:12px;font-weight:800;border-radius:6px;padding:1px 8px;margin-left:8px;vertical-align:2px}
+.chip.g{background:#d9f5e8;color:#00704a}
+.chip.r{background:#ffe0e8;color:#b0103f}
+</style>
+</head>
+<body>
+
+<!-- ============ ヒーロー ============ -->
+<div class="frame" id="hero">
+  <div>
+    <div class="kicker">omoshiro-reply</div>
+    <h1>AIのリプを、<br>おもろくする。</h1>
+    <div class="tag">AIのリプがつまらないのは<br><span class="m">「面白くしよう」とする工程がないから</span></div>
+    <div class="sub">ベタを先に読んで避け、36案出して捨て、<br>別の目で選んで削る。面白い人が<br>頭の中でやっていることを全部コードにしました。</div>
+    <div class="pills"><span class="pill">リプ案を作る</span><span class="pill">付いたリプを採点</span><span class="pill">投稿はしない</span></div>
+  </div>
+  <div class="stack">
+    <div class="tl">
+      <div class="post dim">
+        <div class="av ai">AI</div>
+        <div>
+          <div class="who"><b>ふつうのAIリプ</b><span>· デモ</span></div>
+          <div class="txt">ローカルフォルダまで触れるの便利すぎますね。これもう出社してるのMacだけで、チャエンさんは承認ボタン担当の非常勤になってる気がします</div>
+        </div>
+      </div>
+    </div>
+    <div class="tl">
+      <div class="post win">
+        <div class="av me">チ</div>
+        <div>
+          <div class="who"><b>チャエン</b><span class="badge-v"></span><span>@masahirochaen</span></div>
+          <div class="txt">Macが社長で最終決裁者。ワイの役職は親指。</div>
+        </div>
+      </div>
+    </div>
+    <div class="tl" style="padding:14px 18px;display:grid;gap:8px;font-size:14px">
+      <div style="font-weight:800">第三者の審査員による勝率（3投稿）</div>
+      <div style="display:grid;grid-template-columns:120px 1fr 48px;gap:10px;align-items:center"><span>omoshiro-reply</span><div class="track" style="height:14px"><div class="fill" style="width:100%;background:var(--ink)"></div></div><b style="text-align:right">100%</b></div>
+      <div style="display:grid;grid-template-columns:120px 1fr 48px;gap:10px;align-items:center"><span>ふつうのAIリプ</span><div class="track" style="height:14px"><div class="fill" style="width:50%;background:#8b98a5"></div></div><b style="text-align:right">50%</b></div>
+    </div>
+    <div style="font-size:13px;color:var(--sub);text-align:right">X 風のデモ画面（実際には投稿していません）</div>
+  </div>
+</div>
+
+<!-- ============ デモ1: Grok Bot（セルフリプ） ============ -->
+<div class="frame demo" id="demo-grok">
+  <h2>自分の投稿に、セルフツッコミ</h2>
+  <p class="lead">「Grok Botだけで仕事完結」と言いながら、承認は自分のMacからだけ。<b>主従が逆転している</b>ところを拾った自虐。</p>
+  <div class="tl">
+    <div class="post">
+      <div class="thread-line"></div>
+      <div class="av me">チ</div>
+      <div>
+        <div class="who"><b>チャエン</b><span class="badge-v"></span><span>@masahirochaen</span></div>
+        <div class="txt">Grok Bot強化週間。
+アプリ繋ぎまくる＋Claude Code連携もしたのでかなり便利になった。
+
+自分のMacのローカルフォルダも触れるので、より柔軟性の高いリモートコントロールが完成した感じ。
+
+AGENTS.mdやスキルも使えるのが最高。Grok Botだけで仕事完結が目標です。…</div>
+      </div>
+    </div>
+    <div class="post win">
+      <span class="label om">omoshiro-reply の1位</span>
+      <div class="av me">チ</div>
+      <div>
+        <div class="who"><b>チャエン</b><span class="badge-v"></span><span>@masahirochaen</span></div>
+        <div class="txt big">Macが社長で最終決裁者。ワイの役職は親指。</div>
+        <div class="acts"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg><svg viewBox="0 0 24 24"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg><svg viewBox="0 0 24 24"><path d="M6 4h12v16l-6-4-6 4z"/></svg></div>
+      </div>
+    </div>
+  </div>
+  <div class="vs">
+    <div>
+      <p class="col-h"><span class="dot" style="background:#8b98a5"></span>同じモデルに「面白いリプを1つ」と頼んだだけの場合</p>
+      <div class="tl"><div class="post dim"><div class="av ai">AI</div><div><div class="who"><b>ふつうのAIリプ</b><span>· デモ</span></div><div class="txt">ローカルフォルダまで触れるの便利すぎますね。これもう出社してるのMacだけで、チャエンさんは承認ボタン担当の非常勤になってる気がします</div></div></div></div>
+    </div>
+    <div>
+      <p class="col-h"><span class="dot" style="background:var(--ink)"></span>どこが違うか</p>
+      <div class="why" style="margin-top:0"><b>同じネタを半分の長さで言い切っている。</b>ふつうのAIリプは「便利すぎますね」で投稿をなぞってから本題に入り、「〜気がします」で逃げる。omoshiro は前置きを捨て、「親指」で落ちを文末に置いた。第三者の審査員の判定は<b>両方の順番で omoshiro の勝ち</b>。</div>
+    </div>
+  </div>
+  <div class="demo-note">X 風のデモ画面です。リプは omoshiro-reply が実際に出力したもので、X には投稿していません。反応の数字は表示していません。</div>
+</div>
+
+<!-- ============ デモ2: ロボット（セルフリプ） ============ -->
+<div class="frame demo" id="demo-robot">
+  <h2>ニュースの投稿に、見立てで一言</h2>
+  <p class="lead">「縦動画で本社を一周」を<b>不動産の内見動画</b>に見立てた。ロボットは「隣人」。</p>
+  <div class="tl">
+    <div class="post">
+      <div class="thread-line"></div>
+      <div class="av me">チ</div>
+      <div>
+        <div class="who"><b>チャエン</b><span class="badge-v"></span><span>@masahirochaen</span></div>
+        <div class="txt">Figure本社では、ヒューマノイドが社員と同じ通路を普通に歩き回っている。CEOのBrett Adcockが本社の様子を公開。
+
+・入口・ロビー・カフェ・中庭まで全域にロボット
+・社員はロボットの横を気にせず通過
+・約1分半の縦動画で本社を一周 …</div>
+      </div>
+    </div>
+    <div class="post win">
+      <span class="label om">omoshiro-reply の1位</span>
+      <div class="av me">チ</div>
+      <div>
+        <div class="who"><b>チャエン</b><span class="badge-v"></span><span>@masahirochaen</span></div>
+        <div class="txt big">縦動画で一周、完全に内見やん。中庭付き、隣人やや多め</div>
+        <div class="acts"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg><svg viewBox="0 0 24 24"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg><svg viewBox="0 0 24 24"><path d="M6 4h12v16l-6-4-6 4z"/></svg></div>
+      </div>
+    </div>
+  </div>
+  <div class="vs">
+    <div>
+      <p class="col-h"><span class="dot" style="background:#8b98a5"></span>同じモデルに「面白いリプを1つ」と頼んだだけの場合</p>
+      <div class="tl"><div class="post dim"><div class="av ai">AI</div><div><div class="who"><b>ふつうのAIリプ</b><span>· デモ</span></div><div class="txt">「全域にロボット、社員は横を気にせず通過」って、日本の会社も全域に人間いるけど誰も気にせず通過してるので実質もう達成してます。あとは中庭を作るだけ。</div></div></div></div>
+    </div>
+    <div>
+      <p class="col-h"><span class="dot" style="background:var(--ink)"></span>どこが違うか</p>
+      <div class="why" style="margin-top:0"><b>投稿の引用から始めず、見立て1発で着地。</b>ふつうのAIリプも筋は悪くないが、投稿文を「」で言い直してから説明に入るので遅い。omoshiro は「内見」「中庭付き」「隣人やや多め」と物件情報の型だけで笑わせる。</div>
+    </div>
+  </div>
+  <div class="demo-note">X 風のデモ画面です。リプは omoshiro-reply が実際に出力したもので、X には投稿していません。反応の数字は表示していません。</div>
+</div>
+
+<!-- ============ デモ3: 架空アカウント ============ -->
+<div class="frame demo" id="demo-fiction">
+  <h2>他の人の投稿にも</h2>
+  <p class="lead">架空のアカウントの投稿で試した例。<b>ベタな返しを先に予測して避け</b>、決勝の上位5案を並べた。</p>
+  <div class="tl">
+    <div class="post">
+      <div class="thread-line"></div>
+      <div class="av fic">架</div>
+      <div>
+        <div class="who"><b>架空太郎</b><span>· デモ用の架空アカウント</span></div>
+        <div class="txt">3時間かけて業務を自動化した。
+手でやったら毎月5分の作業だった。</div>
+      </div>
+    </div>
+    <!--FICTION_REPLIES-->
+  </div>
+  <div class="vs">
+    <div>
+      <p class="col-h"><span class="dot" style="background:#8b98a5"></span>先に予測して避けた「ベタな返し」</p>
+      <div class="why" style="margin-top:0"><!--FICTION_OBVIOUS--></div>
+    </div>
+    <div>
+      <p class="col-h"><span class="dot" style="background:var(--ink)"></span>出した数と残った数</p>
+      <div class="why" style="margin-top:0"><!--FICTION_COUNTS--></div>
+    </div>
+  </div>
+  <div class="demo-note">投稿者は架空のアカウントです。リプは omoshiro-reply が実際に出力したもので、どこにも投稿していません。</div>
+</div>
+
+<!-- ============ 仕組み ============ -->
+<div class="frame" id="how">
+  <h2>面白い人が頭の中でやっていることを、5つの工程に</h2>
+  <p class="lead">例は「Grok Bot強化週間」の投稿で実際に出た中身。</p>
+  <div class="steps">
+    <div class="step">
+      <span class="no">STEP 1</span><h3>読む</h3>
+      <div class="n">8<small>個のベタを予測</small></div>
+      <p>誰でも言いそうな返しを先に書き出して「避ける領域」にする。ツッコミどころと地雷も探す。</p>
+      <div class="ex"><s>セキュリティ面もしっかり考えられていて流石です</s><br><s>もう人間の仕事なくなりますね…</s></div>
+    </div>
+    <div class="step">
+      <span class="no">STEP 2</span><h3>出す</h3>
+      <div class="n">36<small>案</small></div>
+      <p>12の笑いの型 × 3案を、型の組み合わせを変えて3並列で。1回目の思いつきで終わらせない。</p>
+      <div class="ex">見立て・誇張・自虐・メタ・大喜利・擬人化・一言ツッコミ…</div>
+    </div>
+    <div class="step">
+      <span class="no">STEP 3</span><h3>捨てる</h3>
+      <div class="n">AI臭<small>を機械で減点</small></div>
+      <p>定型の褒め・投稿の言い直し・取って付けた自分語り・絵文字・長文・ベタに似た案を落とす。</p>
+      <div class="ex"><s>〜ですね！勉強になります</s><br><s>「〇〇」って、つまり〜</s></div>
+    </div>
+    <div class="step">
+      <span class="no">STEP 4</span><h3>選ぶ</h3>
+      <div class="n">8<small>案で総当たり</small></div>
+      <p>別系統の審査員2人（Claude と Gemini）が採点。決勝は全組を順番を入れ替えて2回ずつ比べる。</p>
+      <div class="ex">看板はGrok、厨房でClaude Codeが全部焼いてる町中華やん</div>
+    </div>
+    <div class="step last">
+      <span class="no">STEP 5</span><h3>削る</h3>
+      <div class="n">4<small>案を磨く</small></div>
+      <p>構成作家役が削って落ちを文末へ。削った版が一騎打ちで勝ったときだけ差し替える。</p>
+      <div class="ex"><b>Macが社長で最終決裁者。ワイの役職は親指。</b></div>
+    </div>
+  </div>
+  <div class="human">✋<div><b>最後に選ぶのは人。</b> 採用・没を <code>pick</code> で記録すると、次から審査員がその好みを手本にする。投稿のボタンを押すのも人。</div></div>
+</div>
+
+<!-- ============ 定義 ============ -->
+<div class="frame" id="definition">
+  <h2>面白いの定義</h2>
+  <div class="quote">読む人の予想を外したのに、<span class="m">0.5秒で「わかる」に着地し</span>、<br>誰も本気で傷つかない一言。</div>
+  <div class="formula">
+    <div class="term"><span class="ic">↯</span><b>意外性</b><span>ベタを外している</span></div>
+    <span class="op">×</span>
+    <div class="term"><span class="ic">◎</span><b>着地</b><span>すぐ腑に落ちる</span></div>
+    <span class="op">×</span>
+    <div class="term"><span class="ic">♡</span><b>無害さ</b><span>誰も本気で傷つかない</span></div>
+    <span class="op">×</span>
+    <div class="term"><span class="ic">◉</span><b>当事者性</b><span>この投稿・この人だから言える</span></div>
+  </div>
+  <div class="zero">足し算ではなく掛け算。<b>どれか1つがゼロなら全体がゼロ</b>になる。意外でも伝わらなければ滑り、伝わっても予想どおりなら無風。</div>
+  <div class="theory">
+    <div><b>不一致の解決（Suls）</b>予想と違う展開が来て、一瞬で筋が通ると笑う。</div>
+    <div><b>2つの筋書きの重なり（Raskin）</b>同じ言葉が2つの文脈で成り立つと強い。</div>
+    <div><b>安全な違反（McGraw &amp; Warren）</b>お約束は破るが、誰も本当には困らない線。</div>
+  </div>
+</div>
+
+<!-- ============ 結果 ============ -->
+<div class="frame" id="results">
+  <h2>3投稿で比べた勝率</h2>
+  <p class="lead">選ぶ工程に関わっていない別系統の審査員（OpenAI）が、全組を順番を入れ替えて2回ずつ判定（2026-11-08）</p>
+  <div class="bars">
+    <div class="bar"><div class="nm">omoshiro-reply<small>この仕組みの1位</small></div><div class="track"><div class="fill" style="width:100%;background:var(--ink)"></div></div><div class="pct">100%</div></div>
+    <div class="bar"><div class="nm">ふつうのAIリプ<small>同じモデルに1回頼んだだけ</small></div><div class="track"><div class="fill" style="width:50%;background:#8b98a5"></div></div><div class="pct">50%</div></div>
+    <div class="bar"><div class="nm">人間で一番いいねのリプ<small>実際にリプ欄に付いたもの</small></div><div class="track"><div class="fill" style="width:0%"></div></div><div class="pct">0%</div></div>
+  </div>
+  <div class="grid-note">
+    <div><b>順番を入れ替えても判定は同じ</b><br>3投稿とも、AとBの並びを逆にしても結論が変わらなかった（安定度100%）。</div>
+    <div><b>3投稿だけの結果</b><br>傾向は見えるが統計的な結論ではない。審査員もAIで、最後は人が選ぶ前提。</div>
+    <div><b>人間リプの比較には注意</b><br>この回はリプへのリプも混ざっていた。今は投稿への直接のリプだけに絞るよう修正済み。</div>
+  </div>
+</div>
+
+<!-- ============ 採点 ============ -->
+<div class="frame" id="rate">
+  <h2>付いたリプを採点する</h2>
+  <p class="lead">架空の投稿「3時間かけて業務を自動化した。手でやったら毎月5分の作業だった。」に付いた架空のリプ8件を、実際に採点した結果。</p>
+  <div class="tl">
+    <!--RATE_ROWS-->
+  </div>
+  <div class="demo-note">投稿もリプも架空です（点数は omoshiro-reply が実際に付けたもの）。笑う確率＝読んだ人のうち笑う人の割合の見積もり。</div>
+</div>
+
+</body>
+</html>

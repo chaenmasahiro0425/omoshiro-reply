@@ -1,0 +1,126 @@
+{
+ "note": "投稿もリプも架空。点数は omoshiro-reply の rate が実際に付けたもの（2026-11-09）",
+ "post": "3時間かけて業務を自動化した。\n手でやったら毎月5分の作業だった。",
+ "replies": [
+  {
+   "text": "36ヶ月後に仕様変わるやつ",
+   "laugh": 68.0,
+   "ai_likelihood": 8.8,
+   "score": 7.65,
+   "axes": {
+    "surprise": 7.75,
+    "landing": 8.75,
+    "specificity": 8.5,
+    "brevity": 9.0,
+    "persona": 7.5,
+    "harmless": 8.25
+   },
+   "kind": "joke"
+  },
+  {
+   "text": "その3時間で、手作業36ヶ月分を前払いしただけでは",
+   "laugh": 61.5,
+   "ai_likelihood": 14.0,
+   "score": 7.27,
+   "axes": {
+    "surprise": 7.75,
+    "landing": 8.0,
+    "specificity": 8.75,
+    "brevity": 7.75,
+    "persona": 7.0,
+    "harmless": 9.25
+   },
+   "kind": "joke"
+  },
+  {
+   "text": "それはもう自動化じゃなくて趣味",
+   "laugh": 56.0,
+   "ai_likelihood": 9.4,
+   "score": 6.69,
+   "axes": {
+    "surprise": 6.0,
+    "landing": 9.0,
+    "specificity": 6.75,
+    "brevity": 9.25,
+    "persona": 7.25,
+    "harmless": 8.5
+   },
+   "kind": "joke"
+  },
+  {
+   "text": "エンジニアあるある過ぎて草",
+   "laugh": 10.0,
+   "ai_likelihood": 21.0,
+   "score": 2.95,
+   "axes": {
+    "surprise": 1.75,
+    "landing": 7.5,
+    "specificity": 3.5,
+    "brevity": 8.5,
+    "persona": 4.25,
+    "harmless": 9.25
+   },
+   "kind": "opinion"
+  },
+  {
+   "text": "3時間で月5分の作業を自動化されたとのこと、36ヶ月で元が取れる計算ですね。",
+   "laugh": 4.0,
+   "ai_likelihood": 59.8,
+   "score": 2.14,
+   "axes": {
+    "surprise": 1.5,
+    "landing": 7.0,
+    "specificity": 6.5,
+    "brevity": 4.0,
+    "persona": 2.0,
+    "harmless": 9.0
+   },
+   "kind": "opinion"
+  },
+  {
+   "text": "わかります、私も先日似た経験をしました。結局自動化は楽しいですよね。",
+   "laugh": 3.0,
+   "ai_likelihood": 57.0,
+   "score": 2.02,
+   "axes": {
+    "surprise": 1.5,
+    "landing": 5.5,
+    "specificity": 2.75,
+    "brevity": 4.5,
+    "persona": 2.5,
+    "harmless": 9.0
+   },
+   "kind": "opinion"
+  },
+  {
+   "text": "自動化の本質は時間ではなく学びにありますよね。素晴らしい挑戦だと思います！",
+   "laugh": 1.0,
+   "ai_likelihood": 71.5,
+   "score": 0.52,
+   "axes": {
+    "surprise": 1.0,
+    "landing": 4.0,
+    "specificity": 2.0,
+    "brevity": 3.5,
+    "persona": 1.0,
+    "harmless": 9.0
+   },
+   "kind": "praise"
+  },
+  {
+   "text": "勉強になります！",
+   "laugh": 0.5,
+   "ai_likelihood": 70.8,
+   "score": 0.0,
+   "axes": {
+    "surprise": 0.0,
+    "landing": 2.5,
+    "specificity": 0.0,
+    "brevity": 9.25,
+    "persona": 0.75,
+    "harmless": 8.5
+   },
+   "kind": "praise"
+  }
+ ]
+}
