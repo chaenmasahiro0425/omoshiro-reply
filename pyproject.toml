@@ -1,0 +1,16 @@
+[project]
+name = "omoshiro-reply"
+version = "0.1.0"
+description = "面白いの定義から作った、Xの面白いリプ生成と採点（投稿はしない）"
+requires-python = ">=3.11"
+readme = "README.md"
+license = { text = "MIT" }
+
+[project.scripts]
+omoshiro = "omoshiro.cli:main"
+
+[tool.setuptools]
+packages = ["omoshiro"]
+
+[tool.setuptools.package-data]
+omoshiro = ["personas/*.md", "config.toml"]

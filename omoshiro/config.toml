@@ -1,0 +1,9 @@
+# ai-router（~/dev/tools/ai-router）が無い環境で使う設定。
+# ai-router があれば、そちらの models.toml（x_humor_* の工程）が優先される。
+[standalone]
+# claude -p に渡すモデル。空ならClaude Codeの既定モデル
+model = ""
+
+# 工程ごとに変えたい時だけ書く
+# [standalone.models]
+# x_humor_judge_b = "..."
