@@ -11,3 +11,6 @@ omoshiro = "omoshiro.cli:main"
 
 [tool.setuptools]
 packages = ["omoshiro"]
+
+[tool.setuptools.package-data]
+omoshiro = ["personas/*.md", "config.toml"]

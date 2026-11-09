@@ -45,5 +45,5 @@ def test_finalists_are_diverse():
 
 def test_self_reply_detection():
     from omoshiro.pipeline import is_self_reply
-    assert is_self_reply(Post(id="1", text="x", author="masahirochaen"), "チャエン（@masahirochaen）")
-    assert not is_self_reply(Post(id="1", text="x", author="usutaku_channel"), "チャエン（@masahirochaen）")
+    assert is_self_reply(Post(id="1", text="x", author="example_user"), "テスト（@example_user）")
+    assert not is_self_reply(Post(id="1", text="x", author="someone_else"), "テスト（@example_user）")

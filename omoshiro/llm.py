@@ -15,8 +15,7 @@ import sys
 import tomllib
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-CONFIG = Path(os.environ.get("OMOSHIRO_CONFIG", ROOT / "config.toml"))
+from .paths import CONFIG
 
 _AIROUTER = None
 
@@ -73,7 +72,7 @@ def _claude_json(task: str, prompt: str, schema: dict, model: str | None = None,
            "--setting-sources", "",
            "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
            "--disable-slash-commands", "--no-session-persistence",
-           "--disallowed-tools", "Bash,Edit,Write,Read,WebFetch,WebSearch,Task,Glob,Grep,NotebookEdit"]
+           "--tools", ""]                     # 組み込みツールを全部切る（純テキスト。何も実行させない）
     if model:
         cmd[2:2] = ["--model", model]
     if effort:
@@ -133,3 +132,20 @@ def has_task(task: str) -> bool:
     if ar:
         return task in ar.tasks()
     return True
+
+
+def resolved_models(task_list: list[str]) -> dict[str, str]:
+    """工程 → 実際に使う provider:model（独立した審査かどうかの判定と記録に使う）"""
+    ar = _airouter()
+    out = {}
+    for t in task_list:
+        if ar:
+            try:
+                sp = ar.route(t)
+                out[t] = f"{sp.provider}:{sp.model}"
+            except KeyError:
+                continue
+        else:
+            cfg = _config().get("standalone", {})
+            out[t] = "claude:" + ((cfg.get("models", {}) or {}).get(t) or cfg.get("model") or "default")
+    return out

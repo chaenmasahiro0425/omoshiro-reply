@@ -7,10 +7,10 @@ from __future__ import annotations
 
 import json
 import time
-from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-PREFS = ROOT / "prefs" / "feedback.jsonl"
+from .paths import HOME
+
+PREFS = HOME / "prefs" / "feedback.jsonl"
 
 
 def record(post_text: str, chosen: list[str], rejected: list[str], note: str = "") -> None:

@@ -18,9 +18,9 @@ from . import feedback, pipeline, report
 from .llm import backend_name
 from .xapi import Post, get_post, get_replies, parse_id
 
-ROOT = Path(__file__).resolve().parent.parent
-RUNS = ROOT / "runs"
-PERSONAS = ROOT / "personas"
+from .paths import HOME, PERSONAS
+
+RUNS = HOME / "runs"
 
 
 def load_persona(name: str) -> str:
@@ -41,7 +41,7 @@ def _post_from_args(a) -> tuple[Post, list[Post]]:
     if not a.no_replies:
         try:
             existing = get_replies(post.conversation_id or post.id, limit=a.replies,
-                                   exclude_author=post.author)
+                                   exclude_author=post.author, target_id=post.id)
         except Exception as e:
             print(f"  ⚠️ 既存リプは取れませんでした（続行）: {e}")
     return post, existing
@@ -72,7 +72,8 @@ def cmd_reply(a) -> None:
 def cmd_rate(a) -> None:
     a.text = None
     post = get_post(parse_id(a.target))
-    replies = get_replies(post.conversation_id or post.id, limit=a.replies, exclude_author=post.author)
+    replies = get_replies(post.conversation_id or post.id, limit=a.replies, exclude_author=post.author,
+                          target_id=post.id)
     if not replies:
         sys.exit("採点するリプがありません（検索APIは直近7日ぶんだけ）")
     print(f"投稿 {post.id}（@{post.author}）のリプ {len(replies)} 件を採点 / 呼び出し: {backend_name()}")
@@ -89,7 +90,8 @@ def cmd_bench(a) -> None:
     out = []
     for t in a.targets:
         post = get_post(parse_id(t))
-        existing = get_replies(post.conversation_id or post.id, limit=a.replies, exclude_author=post.author)
+        existing = get_replies(post.conversation_id or post.id, limit=a.replies, exclude_author=post.author,
+                               target_id=post.id)
         print(f"\n=== {post.id} @{post.author}: {post.text[:50]}")
         made = pipeline.make_replies(post, persona, existing, n_per=a.n, quiet=True)
         best = made["ranking"][0]["text"]
@@ -115,10 +117,25 @@ def cmd_pick(a) -> None:
     res = json.loads((Path(a.run) / "result.json").read_text())
     ranking = res["ranking"]
 
-    def pick(s):
-        return [ranking[int(i) - 1]["text"] for i in s.split(",") if i.strip()] if s else []
+    def nums(s):
+        out = []
+        for x in (s or "").split(","):
+            x = x.strip()
+            if not x:
+                continue
+            if not x.isdigit() or not 1 <= int(x) <= len(ranking):
+                sys.exit(f"番号は 1〜{len(ranking)} で指定してください: {x}")
+            if int(x) not in out:
+                out.append(int(x))
+        return out
 
-    ok, ng = pick(a.ok), pick(a.ng)
+    ok_n, ng_n = nums(a.ok), nums(a.ng)
+    if set(ok_n) & set(ng_n):
+        sys.exit(f"同じ番号を採用と没の両方に入れています: {sorted(set(ok_n) & set(ng_n))}")
+    if not ok_n and not ng_n:
+        sys.exit("--ok か --ng で番号を指定してください")
+    ok = [ranking[i - 1]["text"] for i in ok_n]
+    ng = [ranking[i - 1]["text"] for i in ng_n]
     feedback.record(res["post"]["text"], ok, ng, a.note or "")
     print(f"記録しました（採用 {len(ok)} / 没 {len(ng)}）→ {feedback.PREFS}")
 

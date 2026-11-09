@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import itertools
+import json
 import math
 import random
 from concurrent.futures import ThreadPoolExecutor
@@ -205,8 +206,8 @@ def pick_finalists(cands: list[Cand], k: int, max_per_technique: int = 2, sim_pe
     return chosen
 
 
-def _pairwise(post: Post, pairs: list[tuple[Cand, Cand]], judges=JUDGES) -> list[dict]:
-    """各組を両審査員 × 両順で判定。戻り値は [{a, b, a_wins(0〜1)}]（a視点の勝率）"""
+def _pairwise(post: Post, pairs: list[tuple[Cand, Cand]], judges=JUDGES) -> tuple[list[dict], float | None]:
+    """各組を各審査員 × 両順で判定。戻り値は [{a, b, a_wins(0〜1 か None)}]（a視点の勝率）"""
     fb = feedback_block()
 
     def one(task, swap):
@@ -222,27 +223,33 @@ def _pairwise(post: Post, pairs: list[tuple[Cand, Cand]], judges=JUDGES) -> list
         return key, res
 
     jobs = [(t, s) for t in judges for s in (False, True)]
-    tallies = [[0.0, 0] for _ in pairs]
-    agree = {}
+    # votes[(審査員, 組)] = {swap: a視点の勝ち}。同じ組への重複回答は最初の1つだけ使う
+    votes: dict[tuple[str, int], dict[bool, float]] = {}
     for (task, swap), out in zip(jobs, _parallel([lambda t=t, s=s: one(t, s) for t, s in jobs])):
         if not out:
             continue
         key, res = out
         for r in res.get("results", []):
-            if r["pair"] not in key:
+            if r.get("pair") not in key or r.get("winner") not in ("A", "B", "draw"):
                 continue
             i, sw = key[r["pair"]]
+            slot = votes.setdefault((task, i), {})
+            if sw in slot:
+                continue
             w = r["winner"]
-            a_win = 0.5 if w == "draw" else (1.0 if (w == "A") != sw else 0.0)
-            tallies[i][0] += a_win
-            tallies[i][1] += 1
-            agree.setdefault((task, i), []).append(a_win)
+            slot[sw] = 0.5 if w == "draw" else (1.0 if (w == "A") != sw else 0.0)
     out = []
-    for (a, b), (s, n) in zip(pairs, tallies):
-        out.append({"a": a, "b": b, "a_wins": s / n if n else 0.5, "votes": n})
-    # 同じ審査員が順番を入れ替えても同じ判定をした割合（位置の偏りの目安）
-    pairs_seen = [v for v in agree.values() if len(v) == 2]
-    consistency = (sum(1 for v in pairs_seen if v[0] == v[1]) / len(pairs_seen)) if pairs_seen else None
+    for i, (a, b) in enumerate(pairs):
+        # 両順がそろった審査員だけを数える（片側だけの票は位置の偏りをそのまま含むので捨てる）
+        full = [v for (t, j), v in votes.items() if j == i and len(v) == 2]
+        if full:
+            rate = sum(v[False] + v[True] for v in full) / (2 * len(full))
+        else:
+            rate = None                         # 判定不能。引き分けとは区別する
+        out.append({"a": a, "b": b, "a_wins": rate, "judges": len(full)})
+    # 同じ審査員が順番を入れ替えても同じ判定をした割合（位置の偏りの目安。正しさの指標ではない）
+    full_all = [v for v in votes.values() if len(v) == 2]
+    consistency = (sum(1 for v in full_all if v[False] == v[True]) / len(full_all)) if full_all else None
     return out, consistency
 
 
@@ -252,6 +259,8 @@ def tournament(post: Post, cands: list[Cand]) -> float | None:
     for c in cands:
         c.wins = 0.0
     for r in results:
+        if r["a_wins"] is None:
+            continue
         r["a"].wins += r["a_wins"]
         r["b"].wins += 1 - r["a_wins"]
     cands.sort(key=lambda c: (c.wins, c.score), reverse=True)
@@ -259,30 +268,42 @@ def tournament(post: Post, cands: list[Cand]) -> float | None:
 
 
 # ── 5. 削る ─────────────────────────────────────────────
-def punchup(post: Post, persona: str, cands: list[Cand]) -> list[dict]:
+def punchup(post: Post, persona: str, cands: list[Cand], an: dict, existing: list[Post]) -> list[dict]:
+    """作家役が削る → 機械の足切りを通った改稿だけ一騎打ち → はっきり勝ったら差し替えて採点し直す"""
     prompt = P.PUNCHUP.format(definition=P.DEFINITION, ai_smell=P.AI_SMELL_RULES, post=post.context_block(),
                               persona=persona, candidates="\n".join(f"{c.id}: {c.text}" for c in cands))
     res = call_json("x_humor_punchup", prompt, P.PUNCHUP_SCHEMA, temperature=0.5)
     by_id = {c.id: c for c in cands}
-    trials = []
-    pairs = []
+    trials, pairs = [], []
+    seen = set()
     for r in res.get("revised", []):
-        c = by_id.get(r["id"])
-        new = r["text"].strip().strip("「」")
-        if c and new and new != c.text:
-            pairs.append((Cand(id=c.id + "r", text=new), c))
-            trials.append({"id": c.id, "before": c.text, "after": new, "change": r.get("change", "")})
+        c = by_id.get(r.get("id"))
+        new = (r.get("text") or "").strip().strip("「」")
+        if not c or not new or new == c.text or c.id in seen:
+            continue
+        seen.add(c.id)
+        t = {"id": c.id, "before": c.text, "after": new, "change": r.get("change", "")}
+        trials.append(t)
+        rev = Cand(id=c.id + "r", text=new, technique=c.technique, gap=c.gap)
+        # 改稿も元の案と同じ足切りを通す（長すぎ・AI臭・ベタ似）。他の案との重複は見ない
+        _, dropped = prune([rev], an, post, existing)
+        if dropped:
+            t["adopted"], t["reason"] = False, dropped[0].dropped
+            continue
+        pairs.append((rev, c, t))
     if not pairs:
         return trials
-    results, _ = _pairwise(post, pairs)
-    for t, r in zip(trials, results):
-        t["after_wins"] = round(r["a_wins"], 2)
-        if r["a_wins"] > 0.5:               # 磨いた版がはっきり勝った時だけ差し替える
-            c = by_id[t["id"]]
-            c.original, c.text = c.text, t["after"]
-            t["adopted"] = True
-        else:
-            t["adopted"] = False
+    results, _ = _pairwise(post, [(rev, c) for rev, c, _ in pairs])
+    adopted = []
+    for (rev, c, t), r in zip(pairs, results):
+        t["after_wins"] = None if r["a_wins"] is None else round(r["a_wins"], 2)
+        t["adopted"] = bool(r["a_wins"] is not None and r["a_wins"] > 0.5)  # はっきり勝った時だけ
+        if t["adopted"]:
+            c.original, c.text, c.smell, c.smell_reasons = c.text, rev.text, rev.smell, rev.smell_reasons
+            c.comments = []
+            adopted.append(c)
+    if adopted:
+        score(post, persona, adopted, an)        # 差し替えた本文で採点し直す（旧本文の点を残さない）
     return trials
 
 
@@ -310,8 +331,11 @@ def make_replies(post: Post, persona: str, existing: list[Post] | None = None, n
     _log(f"4/5 上位 {len(final)} 案で総当たり（順番を入れ替えて2回ずつ）", quiet)
     consistency = tournament(post, final)
 
-    _log(f"5/5 上位 {min(polish, len(final))} 案を磨いて一騎打ち", quiet)
-    trials = punchup(post, persona, final[:polish]) if polish else []
+    _log(f"5/5 上位 {min(polish, len(final))} 案を磨いて一騎打ち（勝った改稿だけ採点し直す）", quiet)
+    trials = punchup(post, persona, final[:polish], an, existing) if polish else []
+    if any(t.get("adopted") for t in trials):
+        _log("   磨いた版で総当たりをやり直しています", quiet)
+        consistency = tournament(post, final)
 
     return {
         "post": asdict(post),
@@ -400,13 +424,26 @@ def spearman(x: list[float], y: list[float]) -> float | None:
 def baseline_reply(post: Post) -> str:
     res = call_json("x_humor_generate", P.BASELINE.format(post=post.context_block()),
                     P.BASELINE_SCHEMA, temperature=0.7)
-    return res["text"].strip()
+    text = str(res.get("text") or "").strip()
+    if text.startswith("{"):          # モデルが JSON を文字列で二重に包んで返すことがある
+        try:
+            inner = json.loads(text)
+            text = str(next(iter(inner.values()))).strip()
+        except Exception:
+            pass
+    return text
 
 
 def head_to_head(post: Post, entries: dict[str, str], judges=None) -> dict:
-    """{名前: リプ} を総当たりで比べ、名前ごとの勝率を返す（既定は選定に関わらない審査員）"""
-    from .llm import has_task
-    judges = judges or [t for t in REFEREES if has_task(t)] or JUDGES
+    """{名前: リプ} を総当たりで比べ、名前ごとの勝率を返す。
+    既定は選定に関わらない審査員（referee）。使えない時は選定と同じ審査員で比べ、independent=False と記録する"""
+    from .llm import has_task, resolved_models
+    if judges is None:
+        refs = [t for t in REFEREES if has_task(t)]
+        judges = refs or JUDGES
+    models = resolved_models(judges)
+    used_for_selection = set(resolved_models(JUDGES + ["x_humor_generate"]).values())
+    independent = bool(models) and not (set(models.values()) & used_for_selection)
     cands = [Cand(id=k, text=v) for k, v in entries.items() if v]
     pairs = list(itertools.combinations(cands, 2))
     results, consistency = _pairwise(post, pairs, judges=judges)
@@ -414,10 +451,14 @@ def head_to_head(post: Post, entries: dict[str, str], judges=None) -> dict:
     games = {c.id: 0 for c in cands}
     detail = []
     for r in results:
+        detail.append({"a": r["a"].id, "b": r["b"].id,
+                       "a_win_rate": None if r["a_wins"] is None else round(r["a_wins"], 2)})
+        if r["a_wins"] is None:
+            continue
         wins[r["a"].id] += r["a_wins"]
         wins[r["b"].id] += 1 - r["a_wins"]
         games[r["a"].id] += 1
         games[r["b"].id] += 1
-        detail.append({"a": r["a"].id, "b": r["b"].id, "a_win_rate": round(r["a_wins"], 2)})
     return {"win_rate": {k: round(wins[k] / games[k], 2) if games[k] else None for k in wins},
-            "pairs": detail, "judge_consistency": consistency, "entries": entries, "judges": judges}
+            "pairs": detail, "judge_consistency": consistency, "entries": entries,
+            "judges": models, "independent": independent}

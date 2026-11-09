@@ -104,16 +104,22 @@ def get_post(post_id: str) -> Post:
     return p
 
 
-def get_replies(conversation_id: str, limit: int = 20, exclude_author: str = "") -> list[Post]:
-    """会話についたリプ（直近7日・最大 limit 件）。検索APIはアプリ認証で叩く"""
+def get_replies(conversation_id: str, limit: int = 20, exclude_author: str = "",
+                target_id: str = "") -> list[Post]:
+    """会話についたリプ（直近7日・1ページ最大100件）。検索APIはアプリ認証で叩く。
+    target_id を渡すと、その投稿への直接のリプだけに絞る（別の枝・リプへのリプを混ぜない）"""
     q = f"conversation_id:{conversation_id} is:reply"
     if exclude_author:
         q += f" -from:{exclude_author}"
-    d = _get(f"/2/tweets/search/recent?query={quote(q)}&max_results={max(10, min(limit, 100))}"
+    d = _get(f"/2/tweets/search/recent?query={quote(q)}&max_results={max(10, min(limit * 2, 100))}"
              f"&tweet.fields={TWEET_FIELDS}&expansions=author_id&user.fields={USER_FIELDS}", app_auth=True)
     users = {u["id"]: u for u in d.get("includes", {}).get("users", [])}
     out = []
-    for t in d.get("data", [])[:limit]:
+    rows = d.get("data", [])
+    if target_id:
+        rows = [t for t in rows if any(r["type"] == "replied_to" and r["id"] == target_id
+                                       for r in t.get("referenced_tweets", []))]
+    for t in rows[:limit]:
         u = users.get(t.get("author_id"), {})
         txt = re.sub(r"^(@\w+\s+)+", "", _text(t)).strip()   # 先頭の @宛先 を外す
         out.append(Post(id=t["id"], text=txt, author=u.get("username", ""), author_name=u.get("name", ""),
